@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import Cookies from 'js-cookie';
 import type { sessinToken, Profile } from '../types/User';
 import { setAuthToken } from '../utils/request';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -14,15 +14,18 @@ interface AuthContextType {
   login: (data: sessinToken) => void;
   logout: () => void;
   setUser: (user: Profile | null) => void;
-  search:string,
-  setSearch:any
+  search: string;
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const COOKIE_NAME = 'Authentication';
-const COOKIE_EXPIRES = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
+const COOKIE_EXPIRES = 1; // يوم كامل – أفضل من حساب الميلي ثانية
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// -------------------------
+// Helpers
+// -------------------------
 function initializeAuthState(): sessinToken | null {
   const cookie = Cookies.get(COOKIE_NAME);
   if (!cookie) return null;
@@ -42,7 +45,7 @@ function initializeAuthState(): sessinToken | null {
 
 function isTokenExpired(token: string) {
   try {
-    const decoded: any = jwtDecode(token);
+    const decoded: any = jwtDecode(token.replace("Bearer ", ""));
     const now = Date.now() / 1000;
     return decoded.exp < now;
   } catch {
@@ -50,41 +53,48 @@ function isTokenExpired(token: string) {
   }
 }
 
+// -------------------------
+// Provider Component
+// -------------------------
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [user, setUserState] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [search , setSearch] = useState("")
+  const [search, setSearch] = useState("");
 
-  // Initialize auth state from cookie
+  // Load from cookies
   useEffect(() => {
     const data = initializeAuthState();
+
     if (data) {
       if (isTokenExpired(data.jwtToken)) {
-        // لو انتهى التوكن سجل خروج
-        toast.error("Login agine")
-        logout();
+        toast.error("Session expired, please login again.");
+        logout(); 
       } else {
         setToken(data.jwtToken);
         setRoles(data.roles);
         setUserState(data.user);
-        setAuthToken(data.jwtToken); 
+        setAuthToken(data.jwtToken);
       }
     }
+
     setIsLoading(false);
   }, []);
 
+  // -------------------------
+  // Login
+  // -------------------------
   const login = useCallback((data: sessinToken) => {
     const formattedToken = data.jwtToken.startsWith('Bearer ')
       ? data.jwtToken
       : `Bearer ${data.jwtToken}`;
 
     setToken(formattedToken);
-    setRoles(Array.isArray(data.roles) ? data.roles : []);
+    setRoles(data.roles || []);
     setUserState(data.user);
 
-    setAuthToken(formattedToken); 
+    setAuthToken(formattedToken);
 
     Cookies.set(
       COOKIE_NAME,
@@ -95,43 +105,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }),
       {
         expires: COOKIE_EXPIRES,
-        secure: window.location.protocol === 'https:',
+        secure: true,
         sameSite: 'Strict',
       }
     );
   }, []);
 
+  // -------------------------
+  // Logout
+  // -------------------------
   const logout = useCallback(() => {
+    Cookies.remove(COOKIE_NAME);
     setToken(null);
     setRoles([]);
     setUserState(null);
-    setAuthToken(''); 
-    Cookies.remove(COOKIE_NAME);
-    window.location.href = '/login';
+    setAuthToken('');
+
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
   }, []);
 
+  // -------------------------
+  // Update user
+  // -------------------------
   const setUser = useCallback(
     (userData: Profile | null) => {
       setUserState(userData);
+
       const cookie = Cookies.get(COOKIE_NAME);
-      const current = cookie ? JSON.parse(cookie) : { jwtToken: token, roles, user: null };
+      if (!cookie) return;
+
+      const current = JSON.parse(cookie);
       current.user = userData;
 
       Cookies.set(COOKIE_NAME, JSON.stringify(current), {
         expires: COOKIE_EXPIRES,
-        secure: window.location.protocol === 'https:',
-        sameSite: 'Strict',
+        secure: true,
+        sameSite: "Strict",
       });
     },
-    [roles, token]
+    [token, roles]
   );
 
+  // -------------------------
+  // Auto logout when token expires
+  // -------------------------
   useEffect(() => {
     const interval = setInterval(() => {
       if (token && isTokenExpired(token)) {
         logout();
       }
-    }, 60 * 1000); // تحقق كل دقيقة
+    }, 60 * 1000); // كل دقيقة
 
     return () => clearInterval(interval);
   }, [token, logout]);
@@ -148,7 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         setUser,
         search,
-        setSearch
+        setSearch,
       }}
     >
       {children}
@@ -158,6 +183,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }
