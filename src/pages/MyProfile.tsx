@@ -4,14 +4,17 @@ import ProfileHeader from '../components/Profile/ProfileHeader';
 import ProfileTabs from '../components/Profile/ProfileTabs';
 import { useUserProfile } from '../hooks/useProfile';
 import { useLogout } from '../hooks/useAuth';
-import { destructUserProfile } from '../utils/helper';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { useAgent } from '../hooks/useAgent';
 
 function MyProfile() {
 
-  const {  error, data } = useUserProfile();
-  const {  user,listings } = destructUserProfile(data);
+  const {  error } = useUserProfile();
+  const { agent } = useAgent()
+  const {user} = useAuth()
+  const agentListing = agent?.data.properties
   const { mutate: logout } = useLogout();
  
   const navigate = useNavigate();
@@ -51,7 +54,7 @@ function MyProfile() {
 
         {/* Tabs */}
         <CardSection>
-          <ProfileTabs user={user} properties={listings} />
+          <ProfileTabs user={user} properties={agentListing} />
         </CardSection>
 
         {/* Logout */}

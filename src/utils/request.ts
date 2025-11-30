@@ -1,4 +1,4 @@
-const API_URL = "https://re-estate.runasp.net";
+export const API_URL = "https://re-estate.runasp.net";
 let authToken: string | null = null;
 
 export function setAuthToken(token: string | null) {
