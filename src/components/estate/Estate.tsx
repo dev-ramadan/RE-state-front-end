@@ -3,14 +3,15 @@ import Header from '../auth/FormHeader';
 import EstateCard from '../../ui/EstateCard';
 import { Link } from 'react-router';
 import { useAllProperties } from '../../hooks/useProperty';
+import { useAuth } from '../../context/AuthContext';
 
 
 
 const Estate = () => {
   const { data } = useAllProperties("commercial");
-  
+  const {user} = useAuth();
   return (
-    <section className="py-16 bg-gray-50 mt-96 lg:mt-40">
+    <section className={`py-16 bg-gray-50 ${user?.role == "Agent" ? 'mt-96 lg:mt-40' : ''} `}>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center px-6 mb-10">
         <Header

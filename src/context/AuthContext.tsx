@@ -14,6 +14,8 @@ interface AuthContextType {
   login: (data: sessinToken) => void;
   logout: () => void;
   setUser: (user: Profile | null) => void;
+  search:string,
+  setSearch:any
 }
 
 const COOKIE_NAME = 'Authentication';
@@ -53,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<string[]>([]);
   const [user, setUserState] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [search , setSearch] = useState("")
 
   // Initialize auth state from cookie
   useEffect(() => {
@@ -144,6 +147,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         setUser,
+        search,
+        setSearch
       }}
     >
       {children}

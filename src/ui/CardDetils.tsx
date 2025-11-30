@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 type CardDetilsPropse = {
-    count?: string;
+    count?: any;
     title?: string;
     icon?: ReactNode;
     Hcolor?: string;

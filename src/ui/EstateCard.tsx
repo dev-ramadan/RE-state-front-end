@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addItemtoWishList, delItemFromWishList, getWishList } from '../store/wishListSlice';
 import { Like } from '../services/LikesServices';
+import { getLikeFromStorage, setLikeToStorage } from '../utils/likeStorage';
 
 type EstateCardPropse = {
   property: any;
@@ -22,15 +23,20 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
   const [likes, setLikes] = useState(property.likesCount ?? 0);
   const [isLiked, setIsLiked] = useState(property.isLiked ?? false);
 
-  // check if property is already in wishlist
+
   useEffect(() => {
     if (property) {
+      const storedLike = getLikeFromStorage(property.propertyId);
+
       setLikes(property.likesCount ?? 0);
-      setIsLiked(property.isLiked ?? false);
+      setIsLiked(storedLike);
+
+      const exists = wishList.some((item) => item.propertyId === property.propertyId);
+      setIsWishList(exists);
     }
-    const exists = wishList.some((item) => item.propertyId === property.propertyId);
-    setIsWishList(exists);
-  }, [wishList, property.propertyId, property]);
+  }, [wishList, property.propertyId]);
+
+
 
   const handleWishListToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -54,15 +60,16 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
     if (response?.data === "Added") {
       setLikes((prev: number) => prev + 1);
       setIsLiked(true);
+      setLikeToStorage(id, true);
+
     }
 
     if (response?.data === "Deleted") {
       setLikes((prev: number) => (prev > 0 ? prev - 1 : 0));
       setIsLiked(false);
+      setLikeToStorage(id, false);
     }
   };
-
-
 
   return (
     <>
@@ -73,8 +80,9 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
         {/* Property Image */}
         <div className="relative h-48 bg-gray-200 cursor-pointer">
           <img
-            src={image?.[0]?.imageUrl ? "https://re-estate.runasp.net" + image[0].imageUrl : "/placeholder.png"}
+            src={image?.[0]?.imageUrl ? "https://re-estate.runasp.net" + image[0].imageUrl : ""}
             alt={property.title}
+            className='w-full h-full'
           />
           {/* Badge */}
           <div className="absolute top-3 left-3">

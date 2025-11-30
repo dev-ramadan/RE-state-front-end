@@ -6,6 +6,7 @@ import EstateCard from '../ui/EstateCard';
 import OptionSelector from '../ui/OptionSelector';
 
 import { Home, Building2, DollarSign, Ruler } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const propertyTypeOptions = [
   { value: 'Commercial', icon: <Building2 />, label: 'Commercial' },
@@ -25,7 +26,7 @@ const areaOptions = [
 ];
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('');
+  const {search,setSearch} = useAuth()
   const [maxPrice, setMaxPrice] = useState('');
   const [minArea, setMinArea] = useState('');
   const [type, setType] = useState('');
@@ -46,9 +47,9 @@ export default function SearchPage() {
   
   const filtered = allProperties.filter((p:any) => {
     const matchesQuery =
-      p?.title.toLowerCase().includes(query.toLowerCase()) ||
-      p?.city?.toLowerCase().includes(query.toLowerCase()) ||
-      p?.address?.toLowerCase().includes(query.toLowerCase());
+      p?.title.toLowerCase().includes(search.toLowerCase()) ||
+      p?.city?.toLowerCase().includes(search.toLowerCase()) ||
+      p?.address?.toLowerCase().includes(search.toLowerCase());
 
     return (
       matchesQuery &&
@@ -74,8 +75,8 @@ export default function SearchPage() {
           type="text"
           placeholder="Search by city, title or neighborhood..."
           className="w-full p-4 pl-12 border rounded-2xl shadow-sm text-lg"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <Search className="absolute left-4 top-4 text-gray-400" />
       </div>
@@ -109,7 +110,7 @@ export default function SearchPage() {
         {displayed.length > 0 ? (
           displayed.map((property) => (
             <div key={property.propertyId}>
-              <EstateCard property={property} />
+              <EstateCard property={property} image={property?.galleries}/>
             </div>
           ))
         ) : (
