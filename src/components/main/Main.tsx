@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useUserProfile } from '../../hooks/useProfile';
 import { useAuth } from '../../context/AuthContext';
 import { destructUserProfile } from '../../utils/helper';
+import { Link } from 'react-router';
 
 const Main = () => {
   const { user, search, setSearch } = useAuth();
@@ -46,15 +47,20 @@ const Main = () => {
           {/* Search */}
           <div className="w-[80%] mx-auto">
             <InputField id="search">
+            <Link to={'/search'}>
+            
               <Button
                 children={'Search'}
                 icon={<Search />}
                 className="flex absolute w-fit right-3 p-2 top-4"
               />
+              </Link>
               <Input
                 type="text"
                 id="search"
                 name="search"
+                value={search}
+                onChange={(e)=>setSearch(e.target.value)}
                 placeholder="Search"
                 className="mb-16 p-6 bg-white placeholder:text-gray-500  placeholder:md:text-lg text-black border-none outline-none"
               />
