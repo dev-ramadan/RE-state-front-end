@@ -16,8 +16,7 @@ const Main = () => {
   
   const foreSale = listings.filter(item => item.propertyPurpose === "Sale");
   const foreRent = listings.filter(item => item.propertyPurpose === "Rent");
-
-  
+  if(!user) return("user not found");
   return (
     <main className="">
       {/* top */}
