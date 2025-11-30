@@ -3,7 +3,6 @@ import CardSection from '../ui/CardSection';
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import ProfileTabs from '../components/Profile/ProfileTabs';
 import { useUserProfile } from '../hooks/useProfile';
-import Loader from '../ui/Loader';
 import { useLogout } from '../hooks/useAuth';
 import { destructUserProfile } from '../utils/helper';
 import { useNavigate } from 'react-router';
@@ -11,7 +10,7 @@ import { toast } from 'react-hot-toast';
 
 function MyProfile() {
 
-  const { isPending, error, data } = useUserProfile();
+  const {  error, data } = useUserProfile();
   const {  user,listings } = destructUserProfile(data);
   const { mutate: logout } = useLogout();
  
@@ -28,7 +27,6 @@ function MyProfile() {
     }
   };
 
-  if (isPending) return <Loader />;
   if (!user) {
     const errorMessage = error instanceof Error ? JSON.parse(error.message) : 'An error occurred';
     navigate('/error');
