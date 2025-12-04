@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addItemtoWishList, delItemFromWishList, getWishList } from '../store/wishListSlice';
 import { Like } from '../services/LikesServices';
 import { getLikeFromStorage, setLikeToStorage } from '../utils/likeStorage';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 type EstateCardPropse = {
   property: any;
@@ -14,7 +16,7 @@ type EstateCardPropse = {
 
 const EstateCard = ({ property, image }: EstateCardPropse) => {
   if (!property) return null;
-
+  const { user } = useAuth()
   const dispatch = useDispatch();
   const wishList = useSelector(getWishList);
 
@@ -26,10 +28,11 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
 
   useEffect(() => {
     if (property) {
-      const storedLike = getLikeFromStorage(property.propertyId);
-
+      if (user != null) {
+        const storedLike = getLikeFromStorage(property.propertyId);
+        setIsLiked(storedLike);
+      }
       setLikes(property.likesCount ?? 0);
-      setIsLiked(storedLike);
 
       const exists = wishList.some((item) => item.propertyId === property.propertyId);
       setIsWishList(exists);
@@ -53,7 +56,9 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
+    if (user == null) {
+      toast.error('Please Login and try again')
+    }
     const id = property.propertyId;
     const response = await Like(id);
 

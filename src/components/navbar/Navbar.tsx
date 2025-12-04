@@ -1,7 +1,11 @@
 import { Heart, House, Plus, Search, UserRound } from 'lucide-react';
 import { NavLink } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
+  const { user } = useAuth()
+  console.log(user);
+  
   return (
     <>
       <nav className="shadow-md fixed bottom-0 border-2 border-gray-200 z-50 w-full bg-white">
@@ -23,15 +27,17 @@ const Navbar = () => {
               </span>
             </div>
           </NavLink>
-
-          <NavLink to={'/add'}>
-            <div className="flex justify-center items-center flex-col-reverse">
-              <h3>Add</h3>
-              <span>
-                <Plus />
-              </span>
-            </div>
-          </NavLink>
+          {user==null || user?.role == "Agent" ?
+            <NavLink to={'/add'}>
+              <div className="flex justify-center items-center flex-col-reverse">
+                <h3>Add</h3>
+                <span>
+                  <Plus />
+                </span>
+              </div>
+            </NavLink>
+            :''
+          }
 
           <NavLink to={'/wishList'}>
             <div className="flex justify-center items-center flex-col-reverse">
