@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import type { UserProfile } from "../../types/User";
 import { getUserById } from "../../services/ProfileService";
 import { commentLike } from "../../services/LikesServices";
+import toast from "react-hot-toast";
 
 type CommentProps = {
   id: string;
@@ -28,35 +29,35 @@ const Comments = ({ id }: CommentProps) => {
   // -----------------------------
   //       Fetch comments + users
   // -----------------------------
-useEffect(() => {
-  const fetchData = async () => {
-    const commentsData = await getPropertyComments(id);
-    setComments(commentsData || []);
+  useEffect(() => {
+    const fetchData = async () => {
+      const commentsData = await getPropertyComments(id);
+      setComments(commentsData || []);
 
-    if (!commentsData?.length) return;
+      if (!commentsData?.length) return;
 
-    const userIds: any[] = [
-      ...new Set(commentsData.map((c: CommentResponse) => String(c.userID)))
-    ];
+      const userIds: any[] = [
+        ...new Set(commentsData.map((c: CommentResponse) => String(c.userID)))
+      ];
 
-    // جلب بيانات المستخدمين
-    const users = await Promise.all(
-      userIds.map(async (uId: string) => {
-        const res = await getUserById(uId); 
-        return { id: uId, data: res.data as UserProfile };
-      })
-    );
+      // جلب بيانات المستخدمين
+      const users = await Promise.all(
+        userIds.map(async (uId: string) => {
+          const res = await getUserById(uId);
+          return { id: uId, data: res.data as UserProfile };
+        })
+      );
 
-    const formatted: Record<string, UserProfile> = {};
-    users.forEach((u) => {
-      formatted[u.id] = u.data;
-    });
+      const formatted: Record<string, UserProfile> = {};
+      users.forEach((u) => {
+        formatted[u.id] = u.data;
+      });
 
-    setUsersData(formatted);
-  };
+      setUsersData(formatted);
+    };
 
-  fetchData();
-}, [id, refresh]);
+    fetchData();
+  }, [id, refresh]);
 
 
   // -----------------------------
@@ -64,6 +65,9 @@ useEffect(() => {
   // -----------------------------
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
+    if (user == null) {
+      toast.error('Please Login and try again')
+    }
 
     await postComment({ commentText, propertyId: id });
     setCommentText("");
@@ -97,10 +101,10 @@ useEffect(() => {
     const updated = comments.map((c) =>
       c.commentId === item.commentId
         ? {
-            ...c,
-            likesCount: response.data === "Added" ? c.likesCount + 1 : c.likesCount - 1,
-            isLiked: response.data === "Added",
-          }
+          ...c,
+          likesCount: response.data === "Added" ? c.likesCount + 1 : c.likesCount - 1,
+          isLiked: response.data === "Added",
+        }
         : c
     );
 
