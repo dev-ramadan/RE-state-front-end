@@ -1,71 +1,51 @@
-import { Link } from "react-router";
-import { Bath, Bed, Heart, MapPin, Square, ThumbsUp } from "lucide-react";
-import { formatPrice } from "../utils/helper";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getWishList } from "../store/wishListSlice";
-import { useAuth } from "../context/AuthContext";
-import toast from "react-hot-toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { Like } from "../services/LikesServices";
+import { Link } from 'react-router-dom';
+import { Bath, Bed, Heart, MapPin, Square, ThumbsUp } from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { Like } from '../services/LikesServices';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { formatPrice } from '../utils/helper';
+import { getPropertyById } from '../services/PropertyService';
 
 type EstateCardProps = {
-  property: any;
-  image?: any[];
+  propertyType: string;
+  propertyId: string;
 };
 
-const EstateCard = ({ property, image }: EstateCardProps) => {
+const EstateCard = ({ propertyType, propertyId }: EstateCardProps) => {
   const { user } = useAuth();
-  const wishList = useSelector(getWishList);
   const queryClient = useQueryClient();
 
-  const [isWishList, setIsWishList] = useState(false);
-  const [likes, setLikes] = useState(property?.likesCount ?? 0);
+  const { data: property, isLoading } = useQuery({
+    queryKey: ['property', propertyType, propertyId],
+    queryFn: () => getPropertyById(propertyId, propertyType),
+    staleTime: Infinity,
+  });
+
   const [isLiked, setIsLiked] = useState(property?.isLiked ?? false);
+  const [likes, setLikes] = useState(property?.likesCount ?? 0);
 
-  useEffect(() => {
-    if (!property) return;
-    const exists = wishList.some((item) => item.propertyId === property.propertyId);
-    setIsWishList(exists);
-    setLikes(property.likesCount ?? 0);
-    setIsLiked(property.isLiked ?? false);
-  }, [wishList, property]);
+  if (isLoading) return <div>Loading...</div>;
+  if (!property) return null;
 
-  // Toggle wishlist
-  const handleWishListToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsWishList(!isWishList);
-  };
-
-  // Toggle like
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user) {
-      toast.error("Please login and try again");
-      return;
-    }
+    if (!user) return alert('Please login to like');
 
     try {
-      setIsLiked(!isLiked);
-      setLikes((prev: any) => (isLiked ? prev - 1 : prev + 1));
+      const response = await Like(property.propertyId);
 
-      await Like(property.propertyId);
+      const added = response.data === 'Added';
+      setIsLiked(added);
+      setLikes((prev:any) => added ? prev + 1 : Math.max(prev - 1, 0));
 
-      queryClient.invalidateQueries({
-        queryKey: ["property", property.propertyId, property.propertyType],
-      });
+      queryClient.invalidateQueries({ queryKey: ['property', propertyType, propertyId] });
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong");
-      setIsLiked(isLiked);
-      setLikes(likes);
     }
   };
-
-  if (!property) return null;
 
   return (
     <Link
@@ -74,26 +54,21 @@ const EstateCard = ({ property, image }: EstateCardProps) => {
     >
       <div className="relative h-48 bg-gray-200 cursor-pointer">
         <img
-          src={image?.[0]?.imageUrl ? "https://re-estate.runasp.net" + image[0].imageUrl : ""}
+          src={property.galleries?.[0]?.imageUrl ?? ''}
           alt={property.title}
           className="w-full h-full object-cover"
         />
         <div className="absolute top-3 left-3">
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${property.propertyPurpose === "Sale"
-                ? "bg-green-100 text-green-800"
-                : "bg-purple-100 text-purple-800"
-              }`}
-          >
-            For {property.propertyPurpose}
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${property.propertyPurpose === 'Sale' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'}`}>
+            {property.propertyPurpose}
           </span>
         </div>
 
         <button
-          onClick={handleWishListToggle}
+          onClick={handleLike}
           className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition"
         >
-          <Heart className={`h-4 w-4 ${isWishList ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
+          <Heart className={`${isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} />
         </button>
       </div>
 
@@ -105,7 +80,7 @@ const EstateCard = ({ property, image }: EstateCardProps) => {
           onClick={handleLike}
           className="flex items-center space-x-2 mb-3 px-3 py-1 rounded-lg border text-sm hover:bg-gray-100 transition"
         >
-          <ThumbsUp className={`h-4 w-4 ${isLiked ? "text-blue-600 fill-blue-600" : "text-gray-600"}`} />
+          <ThumbsUp className={`h-4 w-4 ${isLiked ? 'text-blue-600 fill-blue-600' : 'text-gray-600'}`} />
           <span className="text-gray-700">{likes} Likes</span>
         </button>
 
@@ -116,13 +91,13 @@ const EstateCard = ({ property, image }: EstateCardProps) => {
 
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center space-x-3">
-            {property.bedrooms && (
+            {property.bedrooms > 0 && (
               <div className="flex items-center space-x-1">
                 <Bed className="h-4 w-4" />
                 <span>{property.bedrooms}</span>
               </div>
             )}
-            {property.bathrooms && (
+            {property.bathrooms > 0 && (
               <div className="flex items-center space-x-1">
                 <Bath className="h-4 w-4" />
                 <span>{property.bathrooms}</span>
@@ -137,8 +112,10 @@ const EstateCard = ({ property, image }: EstateCardProps) => {
           </div>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
-          Listed by {property.agencyName || property.vendorName}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="text-xs text-gray-500">
+            Listed by {property.agencyName || property.vendorName}
+          </div>
         </div>
       </div>
     </Link>
