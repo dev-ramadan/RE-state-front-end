@@ -1,4 +1,3 @@
-import { getToken } from "./commentsService";
 
 const url = "https://re-estate.runasp.net/api/Like/ToggleLikeProperty"
 const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment"
