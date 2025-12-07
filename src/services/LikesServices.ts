@@ -1,4 +1,4 @@
-import { getToken } from "./commentsService";
+import { useAuth } from "../context/AuthContext";
 
 const url = "https://re-estate.runasp.net/api/Like/ToggleLikeProperty"
 const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment"
@@ -7,7 +7,7 @@ const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment"
 
 export const Like = async (id: any) => {
   try {
-    const token = getToken();
+    const {token} = useAuth();
 
     if (!token) {
       throw new Error("No token found");
@@ -39,7 +39,7 @@ export const Like = async (id: any) => {
 
 export const commentLike = async (id: any) => {
   try {
-    const token = getToken();
+    const {token} = useAuth();
 
     if (!token) {
       throw new Error("No token found");
