@@ -1,12 +1,13 @@
 import { getToken } from "./commentsService";
 
-const url = "https://re-estate.runasp.net/api/Like/ToggleLikeProperty";
-const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment";
+const url = "https://re-estate.runasp.net/api/Like/ToggleLikeProperty"
+const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment"
+
+
 
 export const Like = async (id: any) => {
   try {
-    const token = getToken();
-
+    const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("No token found");
     }
@@ -14,11 +15,15 @@ export const Like = async (id: any) => {
     const response = await fetch(`${url}/${id}`, {
       method: "POST",
       headers: {
-        Authorization: token, 
+        Authorization: token.startsWith("Bearer ")
+          ? token
+          : `Bearer ${token}`,
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
       },
+
     });
+    console.log(response);
 
     if (!response.ok) {
       throw new Error("Like request failed");
@@ -27,14 +32,13 @@ export const Like = async (id: any) => {
     return await response.json();
   } catch (err) {
     console.error("Like Error:", err);
-    return null;
+    throw err;
   }
 };
 
 export const commentLike = async (id: any) => {
   try {
-    const token = getToken();
-
+    const token = localStorage.getItem("token");
     if (!token) {
       throw new Error("No token found");
     }
@@ -42,7 +46,9 @@ export const commentLike = async (id: any) => {
     const response = await fetch(`${commentLikeUrl}/${id}`, {
       method: "POST",
       headers: {
-        Authorization: token, 
+        Authorization: token.startsWith("Bearer ")
+          ? token
+          : `Bearer ${token}`,
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
       },
@@ -55,6 +61,19 @@ export const commentLike = async (id: any) => {
     return await response.json();
   } catch (err) {
     console.error("Comment Like Error:", err);
-    return null;
+    throw err;
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
