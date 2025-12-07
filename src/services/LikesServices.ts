@@ -3,7 +3,7 @@ import { getToken } from "./commentsService";
 const url = "https://re-estate.runasp.net/api/Like/ToggleLikeProperty";
 const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment";
 
-export const Like = async (id: string) => {
+export const Like = async (id: any) => {
   try {
     const token = getToken();
 
@@ -31,7 +31,7 @@ export const Like = async (id: string) => {
   }
 };
 
-export const commentLike = async (id: string) => {
+export const commentLike = async (id: any) => {
   try {
     const token = getToken();
 
