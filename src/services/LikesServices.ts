@@ -5,7 +5,7 @@ const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment"
 
 
 
-export const Like = async (id: string) => {
+export const Like = async (id: any) => {
   try {
     const token = getToken();
 
