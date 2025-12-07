@@ -75,8 +75,8 @@ export async function getPropertyById(id: string, propertyType: string) {
     // Dynamically pick the correct response type
     const res =
         propertyType == "Residential"
-            ? await request<getResidentialPropertyById>(url, { method: "GET" })
-            : await request<getCommercialPropertyById>(url, { method: "GET" });
+            ? await request<any>(url, { method: "GET" })
+            : await request<any>(url, { method: "GET" });
 
     if (!res.isSuccess) {
         throw new Error(res.message || "Failed to fetch compounds");
