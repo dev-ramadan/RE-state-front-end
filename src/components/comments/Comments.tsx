@@ -24,7 +24,7 @@ const Comments = ({ id }: CommentProps) => {
 
   const [usersData, setUsersData] = useState<Record<string, UserProfile>>({});
 
-  const { user } = useAuth();
+  const { user ,token} = useAuth();
 
   // -----------------------------
   //       Fetch comments + users
@@ -65,7 +65,7 @@ const Comments = ({ id }: CommentProps) => {
   // -----------------------------
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
-    if (user == null) {
+    if (user == null || token == null) {
       toast.error('Please Login and try again')
     }
 

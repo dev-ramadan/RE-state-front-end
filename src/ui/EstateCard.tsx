@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addItemtoWishList, delItemFromWishList, getWishList } from '../store/wishListSlice';
 import { Like } from '../services/LikesServices';
-import { getLikeFromStorage, setLikeToStorage } from '../utils/likeStorage';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -16,7 +15,7 @@ type EstateCardPropse = {
 
 const EstateCard = ({ property, image }: EstateCardPropse) => {
   if (!property) return null;
-  const { user } = useAuth()
+  const {user} = useAuth()
   const dispatch = useDispatch();
   const wishList = useSelector(getWishList);
 
@@ -28,10 +27,8 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
 
   useEffect(() => {
     if (property) {
-      if (user != null) {
-        const storedLike = getLikeFromStorage(property.propertyId);
-        setIsLiked(storedLike);
-      }
+
+      setIsLiked(property.isLiked);
       setLikes(property.likesCount ?? 0);
 
       const exists = wishList.some((item) => item.propertyId === property.propertyId);
@@ -56,7 +53,7 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (user == null) {
+    if(user == null){
       toast.error('Please Login and try again')
     }
     const id = property.propertyId;
@@ -65,14 +62,12 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
     if (response?.data === "Added") {
       setLikes((prev: number) => prev + 1);
       setIsLiked(true);
-      setLikeToStorage(id, true);
 
     }
 
     if (response?.data === "Deleted") {
       setLikes((prev: number) => (prev > 0 ? prev - 1 : 0));
       setIsLiked(false);
-      setLikeToStorage(id, false);
     }
   };
 
@@ -126,7 +121,7 @@ const EstateCard = ({ property, image }: EstateCardPropse) => {
             onClick={handleLike}
             className="flex items-center space-x-2 mb-3 px-3 py-1 rounded-lg border text-sm hover:bg-gray-100 transition"
           >
-            <ThumbsUp className={`h-4 w-4 ${isLiked ? 'text-blue-600 fill-blue-600' : 'text-gray-600'}`} />
+            <ThumbsUp className={`h-4 w-4 ${ isLiked? 'text-blue-600 fill-blue-600' : 'text-gray-600'}`} />
             <span className="text-gray-700">{likes} Likes</span>
           </button>
 
