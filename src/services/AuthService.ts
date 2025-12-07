@@ -10,11 +10,13 @@ export async function loginService(user: UserSignIn) {
     const res = await request<LoginResponse>("/api/Auth/login", {
         method: "POST",
         body: JSON.stringify(user),
+
     });
 
     if (!res.isSuccess) {
         throw new Error(res.message || "Failed to log in");
     }
+    localStorage.setItem("token", res.data.jwtToken);
 
     return res;
 }
@@ -28,7 +30,10 @@ export async function registerService(user: RegitserForm) {
     if (!res.isSuccess) {
         throw new Error(res.message || "Failed to register");
     }
+    localStorage.setItem("token", res.data.jwtToken);
+
     return res;
+
 }
 export async function logoutService(id: string) {
     const res = await request<LoginResponse>(`/api/Auth/logout/${id}`, {
@@ -37,6 +42,8 @@ export async function logoutService(id: string) {
     if (!res.isSuccess) {
         throw new Error(res.message || "Failed to logout");
     }
+    localStorage.removeItem("token");
+
     return res;
 }
 
