@@ -1,38 +1,22 @@
-
 const url = "https://re-estate.runasp.net/api/Like/ToggleLikeProperty"
 const commentLikeUrl = "https://re-estate.runasp.net/api/Like/ToggleLikeComment"
 
 
 
-export const Like = async (id: any) => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("No token found");
-    }
+export const Like = async (propertyId: any) => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No token found");
 
-    const response = await fetch(`${url}/${id}`, {
-      method: "POST",
-      headers: {
-        Authorization: token.startsWith("Bearer ")
-          ? token
-          : `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-      },
+  const response = await fetch(`${url}/${propertyId}`, {
+    method: "POST",
+    headers: {
+      Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
 
-    });
-    console.log(response);
-
-    if (!response.ok) {
-      throw new Error("Like request failed");
-    }
-
-    return await response.json();
-  } catch (err) {
-    console.error("Like Error:", err);
-    throw err;
-  }
+  if (!response.ok) throw new Error("Like request failed");
+  return response.json();
 };
 
 export const commentLike = async (id: any) => {
